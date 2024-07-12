@@ -33,13 +33,26 @@
 
         async function fetchScores() {
             console.log('Fetching scores from API...');
-            const response = await fetch(`${apiBaseUrl}/api/scores`);
-            if (response.ok) {
-                const scores = await response.json();
-                console.log('Scores fetched:', scores);
-                return scores;
-            } else {
-                console.error('Error fetching scores:', response.statusText);
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/scores`);
+                const contentType = response.headers.get("content-type");
+                if (!response.ok) {
+                    console.error('Error fetching scores:', response.statusText);
+                    alert("获取评分数据时出错");
+                    return {};
+                }
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const scores = await response.json();
+                    console.log('Scores fetched:', scores);
+                    return scores;
+                } else {
+                    const text = await response.text();
+                    console.error('Unexpected response format:', text);
+                    alert("获取评分数据时出错");
+                    return {};
+                }
+            } catch (error) {
+                console.error('Error fetching scores:', error);
                 alert("获取评分数据时出错");
                 return {};
             }
