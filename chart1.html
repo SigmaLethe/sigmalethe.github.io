@@ -29,8 +29,20 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        function drawChart(dimensionIndex) {
-            const ctx = document.getElementById(`chart${dimensionIndex}`).getContext('2d');
+        const apiBaseUrl = "https://d053-114-134-80-252.ngrok-free.app";
+
+        async function fetchScores() {
+            const response = await fetch(`${apiBaseUrl}/api/scores`);
+            if (response.ok) {
+                const scores = await response.json();
+                return scores;
+            } else {
+                alert("获取评分数据时出错");
+                return {};
+            }
+        }
+
+        function calculateStatistics(scores, dimensionIndex) {
             const chartData = [];
             for (let name in scores) {
                 const allScores = scores[name].map(scoreSet => parseFloat(scoreSet[dimensionIndex])).filter(score => !isNaN(score));
@@ -40,7 +52,14 @@
                     chartData.push({ x: avg, y: Math.log(variance), name: name });
                 }
             }
+            return chartData;
+        }
 
+        async function drawChart(dimensionIndex) {
+            const scores = await fetchScores();
+            const chartData = calculateStatistics(scores, dimensionIndex);
+
+            const ctx = document.getElementById(`chart${dimensionIndex}`).getContext('2d');
             new Chart(ctx, {
                 type: 'scatter',
                 data: {
