@@ -29,20 +29,24 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const apiBaseUrl = "https://d053-114-134-80-252.ngrok-free.app";
+        const apiBaseUrl = "https://d053-114-134-80-252.ngrok-free.app"; // 替换为 ngrok 提供的 URL
 
         async function fetchScores() {
+            console.log('Fetching scores from API...');
             const response = await fetch(`${apiBaseUrl}/api/scores`);
             if (response.ok) {
                 const scores = await response.json();
+                console.log('Scores fetched:', scores);
                 return scores;
             } else {
+                console.error('Error fetching scores:', response.statusText);
                 alert("获取评分数据时出错");
                 return {};
             }
         }
 
         function calculateStatistics(scores, dimensionIndex) {
+            console.log('Calculating statistics for dimension index:', dimensionIndex);
             const chartData = [];
             for (let name in scores) {
                 const allScores = scores[name].map(scoreSet => parseFloat(scoreSet[dimensionIndex])).filter(score => !isNaN(score));
@@ -52,10 +56,12 @@
                     chartData.push({ x: avg, y: Math.log(variance), name: name });
                 }
             }
+            console.log('Calculated chart data:', chartData);
             return chartData;
         }
 
         async function drawChart(dimensionIndex) {
+            console.log('Drawing chart for dimension index:', dimensionIndex);
             const scores = await fetchScores();
             const chartData = calculateStatistics(scores, dimensionIndex);
 
@@ -90,6 +96,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            console.log('DOMContentLoaded event triggered');
             drawChart(0); // 对应维度1
         });
     </script>
