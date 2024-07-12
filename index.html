@@ -68,50 +68,61 @@
                        "阿斯卡纶", "魔王", "逻各斯", "维什戴尔", "乌尔比安",
                        "妮芙"];
         let currentName = "";
-        const scores = {};
         const dimensions = ["Dimension 1", "Dimension 2", "Dimension 3", "Dimension 4"];
+        const apiBaseUrl = "https://d053-114-134-80-252.ngrok-free.app";
 
-        function getRandomName() {
+        async function getRandomName() {
             const randomIndex = Math.floor(Math.random() * names.length);
             currentName = names[randomIndex];
             document.getElementById("nameDisplay").innerText = currentName;
             clearTable();
         }
-
+    
         function clearTable() {
             const table = document.getElementById("scoreTable");
             for (let row of table.rows) {
                 for (let cell of row.cells) {
                     if (cell.firstChild && cell.firstChild.nodeName === "INPUT") {
-                        cell.firstChild.value = "";
+                        cell.firstChild.checked = false;
                     }
                 }
             }
         }
 
-        function checkAndRecordScores() {
+        async function checkAndRecordScores() {
             const table = document.getElementById("scoreTable");
             const currentScores = [];
             for (let i = 1; i < table.rows.length; i++) {
                 let dimensionScore = false;
                 for (let j = 1; j < table.rows[i].cells.length; j++) {
-                    const score = table.rows[i].cells[j].firstChild.value;
-                    if (score) {
+                    const scoreInput = table.rows[i].cells[j].firstChild;
+                    if (scoreInput.checked) {
+                        currentScores.push(parseInt(scoreInput.value));
                         dimensionScore = true;
                     }
-                    currentScores.push(score);
                 }
                 if (!dimensionScore) {
                     alert("请为每个维度评分");
                     return;
                 }
             }
-
-            if (!scores[currentName]) {
-                scores[currentName] = [];
+    
+            const response = await fetch(`${apiBaseUrl}/api/scores`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: currentName,
+                    ratings: currentScores
+                })
+            });
+    
+            if (response.ok) {
+                getRandomName();
+            } else {
+                alert("保存评分时出错");
             }
-            scores[currentName].push(currentScores);
-            getRandomName();
         }
 
         function navigateToChart(dimensionIndex) {
